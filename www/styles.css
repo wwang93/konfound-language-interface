@@ -131,6 +131,15 @@ body {
 .tab-page { display: none; }
 .tab-page.active { display: block; }
 
+.access-wrap { max-width: 620px; margin: 0 auto; padding: 52px 20px 72px; }
+.access-panel { padding: 34px; text-align: center; }
+.access-panel h2 { color: var(--green); margin: 10px 0 6px; }
+.access-panel > p { color: var(--muted); }
+.access-panel .form-group { max-width: 390px; margin: 22px auto 14px; text-align: left; }
+.access-panel .btn-brand { min-width: 190px; }
+.access-icon { color: var(--teal); font-size: 35px; }
+.access-note { margin: 18px auto 0; max-width: 430px; }
+
 .workspace-grid { display: grid; grid-template-columns: minmax(320px, 0.38fr) minmax(520px, 0.62fr); gap: 26px; align-items: start; }
 .panel { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); }
 .panel-title { display: flex; align-items: center; gap: 10px; color: var(--green); padding: 19px 22px; border-bottom: 1px solid var(--border); }

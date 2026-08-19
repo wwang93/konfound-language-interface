@@ -68,97 +68,101 @@ ui <- fluidPage(
   ),
   class = "app-shell",
   app_header,
-  tags$nav(
-    class = "app-nav",
-    tags$button(type = "button", class = "nav-item active", `data-tab` = "home", icon("house"), " Home"),
-    tags$button(type = "button", class = "nav-item", `data-tab` = "resources", icon("screwdriver-wrench"), " Resources")
-  ),
-  tags$main(
-    class = "content-wrap",
-    tags$div(
-      id = "home",
-      class = "tab-page active",
+  uiOutput("access_gate"),
+  conditionalPanel(
+    condition = "output.access_granted === 'true'",
+    tags$nav(
+      class = "app-nav",
+      tags$button(type = "button", class = "nav-item active", `data-tab` = "home", icon("house"), " Home"),
+      tags$button(type = "button", class = "nav-item", `data-tab` = "resources", icon("screwdriver-wrench"), " Resources")
+    ),
+    tags$main(
+      class = "content-wrap",
       tags$div(
-        class = "workspace-grid",
-        tags$aside(
-          id = "specification_panel",
-          class = "panel specification-panel",
-          tags$div(class = "panel-title", icon("sliders"), tags$h2("Specification")),
-          step_card(
-            "0", "Bring your evidence",
-            textAreaInput(
-              "article_text", NULL,
-              placeholder = paste(
-                "Paste a results paragraph, regression table copied as text,",
-                "or statistical software output..."
+        id = "home",
+        class = "tab-page active",
+        tags$div(
+          class = "workspace-grid",
+          tags$aside(
+            id = "specification_panel",
+            class = "panel specification-panel",
+            tags$div(class = "panel-title", icon("sliders"), tags$h2("Specification")),
+            step_card(
+              "0", "Bring your evidence",
+              textAreaInput(
+                "article_text", NULL,
+                placeholder = paste(
+                  "Paste a results paragraph, regression table copied as text,",
+                  "or statistical software output..."
+                ),
+                rows = 9,
+                width = "100%"
               ),
-              rows = 9,
-              width = "100%"
+              tags$div(
+                class = "input-actions",
+                actionButton("extract", "Extract statistics", icon = icon("wand-magic-sparkles"), class = "btn-brand"),
+                actionButton("load_example", "Load example", icon = icon("flask"), class = "btn-secondary")
+              ),
+              uiOutput("api_status")
             ),
-            tags$div(
-              class = "input-actions",
-              actionButton("extract", "Extract statistics", icon = icon("wand-magic-sparkles"), class = "btn-brand"),
-              actionButton("load_example", "Load example", icon = icon("flask"), class = "btn-secondary")
+            step_card(
+              "1", "What type of outcome variable?",
+              radioButtons(
+                "outcome_type", NULL,
+                choices = c("Continuous" = "continuous", "Dichotomous" = "dichotomous"),
+                selected = "continuous"
+              )
             ),
-            uiOutput("api_status")
-          ),
-          step_card(
-            "1", "What type of outcome variable?",
-            radioButtons(
-              "outcome_type", NULL,
-              choices = c("Continuous" = "continuous", "Dichotomous" = "dichotomous"),
-              selected = "continuous"
+            step_card("2", "What is the data source?", uiOutput("source_type_ui")),
+            step_card("3", "What analysis do you want?", uiOutput("analysis_ui")),
+            step_card(
+              "4", "Review and confirm inputs",
+              tags$p(class = "microcopy", "AI suggestions are drafts. Compare each value with the evidence before calculating."),
+              uiOutput("parameter_inputs"),
+              uiOutput("standard_error_type_ui"),
+              checkboxInput("confirmed", "I reviewed these values against the source text.", FALSE),
+              actionButton("run_analysis", "Run sensitivity analysis", icon = icon("chart-line"), class = "btn-run")
             )
           ),
-          step_card("2", "What is the data source?", uiOutput("source_type_ui")),
-          step_card("3", "What analysis do you want?", uiOutput("analysis_ui")),
-          step_card(
-            "4", "Review and confirm inputs",
-            tags$p(class = "microcopy", "AI suggestions are drafts. Compare each value with the evidence before calculating."),
-            uiOutput("parameter_inputs"),
-            uiOutput("standard_error_type_ui"),
-            checkboxInput("confirmed", "I reviewed these values against the source text.", FALSE),
-            actionButton("run_analysis", "Run sensitivity analysis", icon = icon("chart-line"), class = "btn-run")
+          tags$section(
+            class = "panel results-panel",
+            tags$div(class = "panel-title", icon("chart-column"), tags$h2("Results")),
+            uiOutput("extraction_review"),
+            uiOutput("analysis_result")
           )
-        ),
+        )
+      ),
+      tags$div(
+        id = "resources",
+        class = "tab-page",
         tags$section(
-          class = "panel results-panel",
-          tags$div(class = "panel-title", icon("chart-column"), tags$h2("Results")),
-          uiOutput("extraction_review"),
-          uiOutput("analysis_result")
+          class = "panel resource-panel",
+          tags$div(class = "panel-title", icon("book-open"), tags$h2("Resources & privacy")),
+          tags$div(
+            class = "resource-grid",
+            tags$article(
+              tags$h3("How this MVP works"),
+              tags$p("The Shiny interface and sensitivity calculations run inside the current server session. When you click Extract statistics, the pasted text is sent to the OpenAI API and is not sent anywhere by the demo example button."),
+              tags$p("The extraction returns structured fields plus evidence quotes. Nothing is calculated until you review the fields and explicitly confirm them.")
+            ),
+            tags$article(
+              tags$h3("API configuration"),
+              tags$p("Store OPENAI_API_KEY only in a local .Renviron file or the hosting platform's Secret Variables. The key is read by the R backend and is never rendered in the browser."),
+              tags$p("OPENAI_MODEL is optional. The default is gpt-5.6-sol and can be changed without editing the app.")
+            ),
+            tags$article(
+              tags$h3("Method boundaries"),
+              tags$p("A language model can misread tables, choose the wrong model, or confuse a standard error with another statistic. Evidence review is a required part of the workflow, not a cosmetic step."),
+              tags$a(href = "https://konfound-project.github.io/konfound/", target = "_blank", "KonFound documentation ", icon("arrow-up-right-from-square"))
+            )
+          )
         )
       )
     ),
-    tags$div(
-      id = "resources",
-      class = "tab-page",
-      tags$section(
-        class = "panel resource-panel",
-        tags$div(class = "panel-title", icon("book-open"), tags$h2("Resources & privacy")),
-        tags$div(
-          class = "resource-grid",
-          tags$article(
-            tags$h3("How this MVP works"),
-            tags$p("The Shiny interface and sensitivity calculations run on this computer. When you click Extract statistics, the pasted text is sent to the OpenAI API and is not sent anywhere by the demo example button."),
-            tags$p("The extraction returns structured fields plus evidence quotes. Nothing is calculated until you review the fields and explicitly confirm them.")
-          ),
-          tags$article(
-            tags$h3("API configuration"),
-            tags$p("Store OPENAI_API_KEY only in your local .Renviron file. The key is read by the R backend and is never rendered in the browser."),
-            tags$p("OPENAI_MODEL is optional. The default is gpt-5.6-sol and can be changed without editing the app.")
-          ),
-          tags$article(
-            tags$h3("Method boundaries"),
-            tags$p("A language model can misread tables, choose the wrong model, or confuse a standard error with another statistic. Evidence review is a required part of the workflow, not a cosmetic step."),
-            tags$a(href = "https://konfound-project.github.io/konfound/", target = "_blank", "KonFound documentation ", icon("arrow-up-right-from-square"))
-          )
-        )
-      )
+    tags$footer(
+      tags$span("Standalone MVP • Separate from the upstream repository"),
+      tags$span("OpenAI extraction is optional; konfound calculation is deterministic")
     )
-  ),
-  tags$footer(
-    tags$span("Standalone local MVP • No upstream pull request"),
-    tags$span("OpenAI extraction is optional; konfound calculation is deterministic")
   )
 )
 
@@ -166,6 +170,39 @@ server <- function(input, output, session) {
   extraction <- reactiveVal(NULL)
   analysis <- reactiveVal(NULL)
   api_error <- reactiveVal(NULL)
+  expected_access_code <- Sys.getenv("KONFOUND_ACCESS_CODE", unset = "")
+  access_required <- nzchar(expected_access_code)
+  access_granted <- reactiveVal(!access_required)
+
+  output$access_granted <- renderText(if (isTRUE(access_granted())) "true" else "false")
+  outputOptions(output, "access_granted", suspendWhenHidden = FALSE)
+
+  output$access_gate <- renderUI({
+    if (!access_required || isTRUE(access_granted())) return(NULL)
+    tags$main(
+      class = "access-wrap",
+      tags$section(
+        class = "panel access-panel",
+        tags$div(class = "access-icon", icon("lock")),
+        tags$h2("Team preview"),
+        tags$p("Enter the shared access code to open this research MVP."),
+        passwordInput("access_code", "Access code", placeholder = "Enter access code"),
+        actionButton("unlock_app", "Open application", icon = icon("arrow-right-to-bracket"), class = "btn-brand"),
+        tags$p(class = "microcopy access-note", "The access code is checked only on the server and is never stored in this repository.")
+      )
+    )
+  })
+
+  observeEvent(input$unlock_app, {
+    supplied_code <- input$access_code %||% ""
+    if (identical(enc2utf8(supplied_code), enc2utf8(expected_access_code))) {
+      access_granted(TRUE)
+      showNotification("Access granted for this browser session.", type = "message")
+    } else {
+      updateTextInput(session, "access_code", value = "")
+      showNotification("Incorrect access code.", type = "error")
+    }
+  })
 
   output$api_status <- renderUI({
     configured <- nzchar(trimws(Sys.getenv("OPENAI_API_KEY")))
@@ -295,6 +332,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$extract, {
+    if (!isTRUE(access_granted())) return()
     article_text <- trimws(input$article_text %||% "")
     if (!nzchar(article_text)) {
       showNotification("Paste article text or software output first.", type = "warning")

@@ -1,6 +1,6 @@
 # KonFound Language Interface MVP
 
-A standalone local Shiny application that adds a reviewable natural-language layer to `konfound`.
+A standalone Shiny application that adds a reviewable natural-language layer to `konfound`.
 It is intentionally separate from the upstream KonFound repository and does not create a pull request.
 
 ## MVP workflow
@@ -56,12 +56,15 @@ This repository includes a generated `manifest.json` for deployment from GitHub.
 
 1. Create a Shiny deployment from this repository, using `main` and `app.R`.
 2. Add `OPENAI_API_KEY` under the deployment's Variables settings.
-3. Optionally add `OPENAI_MODEL=gpt-5.6-sol` and `KONFOUND_MAX_INPUT_CHARS=20000`.
-4. Keep the deployment private while testing, and never commit `.Renviron`.
+3. Add a long, random `KONFOUND_ACCESS_CODE` under Variables for the team preview gate.
+4. Optionally add `OPENAI_MODEL=gpt-5.6-sol` and `KONFOUND_MAX_INPUT_CHARS=20000`.
+5. Never commit `.Renviron` or any real secret value.
+
+The shared access-code gate reduces casual use of a public MVP but is not a replacement for platform authentication. Rotate the code if it is shared outside the intended team.
 
 ## Data boundary
 
-- UI state and KonFound calculations stay on the local computer.
+- UI state and KonFound calculations stay inside the current Shiny server session.
 - Clicking **Extract statistics** sends the pasted text to the OpenAI API.
 - The request uses Structured Outputs and `store = false`.
 - Clicking **Load example** does not call OpenAI.
@@ -71,7 +74,7 @@ Avoid submitting restricted, identifiable, or unpublished text unless its use wi
 
 ## Current scope
 
-The MVP supports continuous-outcome linear models, dichotomous-outcome logistic models, and 2 x 2 inputs exposed by `pkonfound()`. It extracts one focal model per request. PDF parsing, Word upload, multi-model comparison, OCR, authentication, shared deployment, and persistent storage are deliberately out of scope.
+The MVP supports continuous-outcome linear models, dichotomous-outcome logistic models, and 2 x 2 inputs exposed by `pkonfound()`. It extracts one focal model per request. PDF parsing, Word upload, multi-model comparison, OCR, full user authentication, and persistent storage are deliberately out of scope.
 
 ## Tests
 
