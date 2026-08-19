@@ -48,6 +48,16 @@ Then open <http://127.0.0.1:3838>. Set `KONFOUND_PORT` before starting if port 3
 Do not paste a key into the Shiny browser UI, source code, Git history, screenshots, or chat. `.Renviron` is excluded by `.gitignore`. The R backend reads the key and sends the request directly to `https://api.openai.com/v1/responses`.
 
 `OPENAI_MODEL` defaults to `gpt-5.6-sol` and can be changed in `.Renviron` without editing code.
+The default extraction limit is 20,000 characters; `KONFOUND_MAX_INPUT_CHARS` can adjust it.
+
+## Deploy to Posit Connect Cloud
+
+This repository includes a generated `manifest.json` for deployment from GitHub. In Connect Cloud:
+
+1. Create a Shiny deployment from this repository, using `main` and `app.R`.
+2. Add `OPENAI_API_KEY` under the deployment's Variables settings.
+3. Optionally add `OPENAI_MODEL=gpt-5.6-sol` and `KONFOUND_MAX_INPUT_CHARS=20000`.
+4. Keep the deployment private while testing, and never commit `.Renviron`.
 
 ## Data boundary
 

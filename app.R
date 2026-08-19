@@ -300,6 +300,15 @@ server <- function(input, output, session) {
       showNotification("Paste article text or software output first.", type = "warning")
       return()
     }
+    max_input_chars <- suppressWarnings(as.integer(Sys.getenv("KONFOUND_MAX_INPUT_CHARS", unset = "20000")))
+    if (is.na(max_input_chars) || max_input_chars < 1L) max_input_chars <- 20000L
+    if (nchar(article_text, type = "chars") > max_input_chars) {
+      showNotification(
+        sprintf("This MVP accepts up to %s characters per extraction.", format(max_input_chars, big.mark = ",")),
+        type = "warning"
+      )
+      return()
+    }
     if (!nzchar(trimws(Sys.getenv("OPENAI_API_KEY")))) {
       api_error("OPENAI_API_KEY is not configured. Follow the Resources tab, or use Load example now.")
       showNotification("API key is not configured; the built-in example remains available.", type = "warning")
